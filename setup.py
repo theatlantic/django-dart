@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 from dart import VERSION
 
 
-f = open(os.path.join(os.path.dirname(__file__), 'README.txt'))
+f = open(os.path.join(os.path.dirname(__file__), 'README.markdown'))
 readme = f.read()
 f.close()
 
