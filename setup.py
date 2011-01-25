@@ -1,16 +1,13 @@
 import os
 from setuptools import setup, find_packages
 
-from dart import VERSION
-
-
 f = open(os.path.join(os.path.dirname(__file__), 'README.markdown'))
 readme = f.read()
 f.close()
 
 setup(
     name='django-dart',
-    version=".".join(map(str, VERSION)),
+    version="1.0",
     description='django-dart is a reusable Django application for DoubleClick ad tags',
     long_description=readme,
     author='Josh West',
