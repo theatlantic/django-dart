@@ -4,16 +4,25 @@ from django.template.loader import get_template
 from django.template import Context
 from django.template.defaultfilters import slugify
 
-from settings import DART_AD_DEFAULTS as defaults
+from settings import DART_AD_DEFAULTS
+
+if not DART_AD_DEFAULTS:
+	DART_AD_DEFAULTS = {}
 
 class Ad(object):
 	""" Base class for Ad and Ad_Factory, keeps track of assigned attributes """
 
-	attributes = defaults
-	site = defaults['site']
-	zone = defaults['zone']
+	try:
+		shared_attributes = DART_AD_DEFAULTS['attributes']
+	except KeyError:
+		shared_attributes = {}
+
+	site = DART_AD_DEFAULTS['site']
+	zone = DART_AD_DEFAULTS['zone']
 
 	def __init__(self, pos, size='0x0', **kwargs):
+
+		self.attributes = self.shared_attributes.copy()
 		self.attributes.update(kwargs)
 		self.attributes['ord'] = str(randint(1, 5000))
 		self.attributes['pos'] = pos
@@ -35,12 +44,6 @@ class Ad(object):
 
 		return link + '?'
 
-	def __getattr__(self, item):
-		return self.attributes[item]
-
-	def __setattr__(self, key, value):
-		self.attributes[key] = value
-
 	def __unicode__(self):
 		""" Prints out the Ad using the ad.html template """
 		link = self.get_link()
@@ -50,4 +53,4 @@ class Ad(object):
 
 	@staticmethod
 	def set(**kwargs):
-		Ad.attributes.update(kwargs)
+		Ad.shared_attributes.update(kwargs)
