@@ -1,8 +1,9 @@
 from random import randint
 
-from django.template.loader import get_template
-from django.template import Context
 from django.template.defaultfilters import slugify
+
+from coffin.template import Context
+from coffin.template.loader import get_template
 
 from settings import DART_AD_DEFAULTS
 
