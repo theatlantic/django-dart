@@ -30,20 +30,35 @@ class Ad(object):
 		self.attributes['sz'] = size
 
 	def get_link(self):
-		link = self.site + '/' + self.zone
+		link = '%s/%s;' % (self.site, self.zone)
 
 		for attr, val in self.attributes.items():
 
 			# if it is a non-string iteratible object
 			if hasattr(val, '__iter__'):
-				# join together with commas
-				val = ",".join( map(slugify,val) )
+				link += self._format_multiple_values(attr, val)
 			else:
-				val = slugify(val)
-
-			link = link + ';' + attr + '=' + val
+				link += self._format_value(attr, val)
 
 		return link + '?'
+
+	def _format_value(self, attribute_name, val):
+		return "%s=%s;" % (attribute_name, slugify(val))
+
+	def _format_multiple_values(self, attr, values):
+
+		formatted = ''
+		index = ''
+		for val in values:
+			enumerated_attr = attr + str(index)
+			formatted += self._format_value(enumerated_attr, val)
+
+			if index == '':
+				index = 1
+				
+			index += 1
+
+		return formatted
 
 	def __unicode__(self):
 		""" Prints out the Ad using the ad.html template """
