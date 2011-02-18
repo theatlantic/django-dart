@@ -10,6 +10,8 @@ from settings import DART_AD_DEFAULTS
 if not DART_AD_DEFAULTS:
 	DART_AD_DEFAULTS = {}
 
+
+
 class Ad(object):
 	""" Base class for Ad and Ad_Factory, keeps track of assigned attributes """
 
@@ -20,6 +22,7 @@ class Ad(object):
 
 	site = DART_AD_DEFAULTS['site']
 	zone = DART_AD_DEFAULTS['zone']
+	tile = 1
 
 	def __init__(self, pos, size='0x0', **kwargs):
 
@@ -28,6 +31,8 @@ class Ad(object):
 		self.attributes['ord'] = str(randint(1, 5000))
 		self.attributes['pos'] = pos
 		self.attributes['sz'] = size
+		self.attributes['tile'] = self.tile
+		self.__class__.tile += 1
 
 	def get_link(self):
 		link = '%s/%s;' % (self.site, self.zone)
@@ -62,6 +67,7 @@ class Ad(object):
 
 	def __unicode__(self):
 		""" Prints out the Ad using the ad.html template """
+
 		link = self.get_link()
 		t = get_template('ad.html')
 		c = Context({'pos': self.attributes['pos'], 'link': link})
