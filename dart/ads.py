@@ -15,24 +15,14 @@ if not DART_AD_DEFAULTS:
 class Ad(object):
 	""" Base class for Ad and Ad_Factory, keeps track of assigned attributes """
 
-	try:
-		shared_attributes = DART_AD_DEFAULTS['attributes']
-	except KeyError:
-		shared_attributes = {}
-
 	site = DART_AD_DEFAULTS['site']
 	zone = DART_AD_DEFAULTS['zone']
-	tile = 1
 
 	def __init__(self, pos, size='0x0', **kwargs):
-
-		self.attributes = self.shared_attributes.copy()
+		self.attributes = {}
 		self.attributes.update(kwargs)
-		self.attributes['ord'] = str(randint(1, 5000))
 		self.attributes['pos'] = pos
 		self.attributes['sz'] = size
-		self.attributes['tile'] = self.tile
-		self.__class__.tile += 1
 
 	def get_link(self):
 		link = '%s/%s;' % (self.site, self.zone)
@@ -73,6 +63,27 @@ class Ad(object):
 		c = Context({'pos': self.attributes['pos'], 'link': link})
 		return t.render(c)
 
-	@staticmethod
-	def set(**kwargs):
-		Ad.shared_attributes.update(kwargs)
+class AdFactory(object):
+
+	default_attributes = DART_AD_DEFAULTS
+
+	def __init__(self, **kwargs):
+		self.attributes = self.default_attributes.copy()
+		self.tile = 0
+		self.random = str(randint(1, 10000))
+		self.set(**kwargs)
+
+	def set(self, **kwargs):
+		self.attributes.update(kwargs)
+
+	def get(self, *args, **kwargs):
+		self.tile += 1
+
+		attr = self.attributes.copy()
+		attr.update({
+			'tile':self.tile,
+			'ord': self.random
+		})
+		attr.update(kwargs)
+
+		return Ad(*args, **attr)
