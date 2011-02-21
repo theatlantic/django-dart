@@ -10,19 +10,44 @@ from settings import DART_AD_DEFAULTS
 if not DART_AD_DEFAULTS:
 	DART_AD_DEFAULTS = {}
 
+if hasattr(DART_AD_DEFAULTS, 'site'):
+	DEFAULT_SITE = DART_AD_DEFAULTS['site']
+	del(DART_AD_DEFAULTS['site'])
+else:
+	DEFAULT_SITE = 'site'
+
+if hasattr(DART_AD_DEFAULTS, 'zone'):
+	DEFAULT_SITE = DART_AD_DEFAULTS['zone']
+	del(DART_AD_DEFAULTS['zone'])
+else:
+	DEFAULT_ZONE = 'zone'
 
 
 class Ad(object):
 	""" Base class for Ad and Ad_Factory, keeps track of assigned attributes """
 
-	site = DART_AD_DEFAULTS['site']
-	zone = DART_AD_DEFAULTS['zone']
+	default_site = DEFAULT_SITE
+	default_zone = DEFAULT_ZONE
 
 	def __init__(self, pos, size='0x0', **kwargs):
+		
+		try:
+			self.site = kwargs['site']
+			del(kwargs['site'])
+		except KeyError:
+			self.site = self.default_site
+
+		try:
+			self.zone = kwargs['zone']
+			del(kwargs['zone'])
+		except KeyError:
+			self.zone = self.default_zone
+			
 		self.attributes = {}
 		self.attributes.update(kwargs)
 		self.attributes['pos'] = pos
 		self.attributes['sz'] = size
+
 
 	def get_link(self):
 		link = '%s/%s;' % (self.site, self.zone)
@@ -65,6 +90,7 @@ class Ad(object):
 
 class AdFactory(object):
 
+	attributes = {}
 	default_attributes = DART_AD_DEFAULTS
 
 	def __init__(self, **kwargs):
@@ -72,6 +98,7 @@ class AdFactory(object):
 		self.tile = 0
 		self.random = str(randint(1, 10000))
 		self.set(**kwargs)
+
 
 	def set(self, **kwargs):
 		self.attributes.update(kwargs)
@@ -86,4 +113,6 @@ class AdFactory(object):
 		})
 		attr.update(kwargs)
 
-		return Ad(*args, **attr)
+		ad = Ad(*args, **attr)
+		
+		return ad
