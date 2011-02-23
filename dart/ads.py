@@ -63,7 +63,11 @@ class Ad(object):
 		return link + '?'
 
 	def _format_value(self, attribute_name, val):
-		return "%s=%s;" % (attribute_name, slugify(val))
+
+		if attribute_name != 'sz':
+			val = slugify(val)
+
+		return "%s=%s;" % (attribute_name, val)
 
 	def _format_multiple_values(self, attr, values):
 
