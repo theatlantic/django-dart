@@ -42,12 +42,19 @@ class Ad(object):
 			del(kwargs['zone'])
 		except KeyError:
 			self.zone = self.default_zone
-			
+
 		self.attributes = {}
 		self.attributes.update(kwargs)
 		self.attributes['pos'] = pos
 		self.attributes['sz'] = size
 
+	def get_zone(self):
+		return self._zone
+
+	def set_zone(self, value):
+		self._zone = slugify(value)
+
+	zone = property(get_zone, set_zone)
 
 	def get_link(self):
 		link = '%s/%s;' % (self.site, self.zone)
