@@ -42,6 +42,11 @@ class Ad(object):
 			del(kwargs['zone'])
 		except KeyError:
 			self.zone = self.default_zone
+		
+		try: 
+			self.desc_text = kwargs['desc_text']
+		except KeyError:
+			self.desc_text = ''
 			
 		self.attributes = {}
 		self.attributes.update(kwargs)
@@ -85,7 +90,11 @@ class Ad(object):
 
 		link = self.get_link()
 		t = get_template('ad.html')
-		c = Context({'pos': self.attributes['pos'], 'link': link})
+		c = Context({
+			'pos': self.attributes['pos'],
+			'link': link,
+			'desc_text': self.desc_text
+		})
 		return t.render(c)
 
 class AdFactory(object):
