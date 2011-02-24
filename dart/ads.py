@@ -48,11 +48,19 @@ class Ad(object):
 		except KeyError:
 			self.desc_text = ''
 			
+
 		self.attributes = {}
 		self.attributes.update(kwargs)
 		self.attributes['pos'] = pos
 		self.attributes['sz'] = size
 
+	def get_zone(self):
+		return self._zone
+
+	def set_zone(self, value):
+		self._zone = slugify(value)
+
+	zone = property(get_zone, set_zone)
 
 	def get_link(self):
 		link = '%s/%s;' % (self.site, self.zone)
@@ -68,7 +76,11 @@ class Ad(object):
 		return link + '?'
 
 	def _format_value(self, attribute_name, val):
-		return "%s=%s;" % (attribute_name, slugify(val))
+
+		if attribute_name != 'sz':
+			val = slugify(val)
+
+		return "%s=%s;" % (attribute_name, val)
 
 	def _format_multiple_values(self, attr, values):
 
