@@ -48,6 +48,11 @@ class Ad(object):
 		except KeyError:
 			self.desc_text = ''
 			
+		try: 
+			self.template = kwargs['template']
+		except KeyError:
+			self.template = 'ad.html'
+			
 
 		self.attributes = {}
 		self.attributes.update(kwargs)
@@ -101,7 +106,7 @@ class Ad(object):
 		""" Prints out the Ad using the ad.html template """
 
 		link = self.get_link()
-		t = get_template('ad.html')
+		t = get_template(self.template)
 		c = Context({
 			'pos': self.attributes['pos'],
 			'link': link,
