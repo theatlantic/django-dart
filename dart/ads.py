@@ -78,7 +78,7 @@ class Ad(object):
 			else:
 				link += self._format_value(attr, val)
 
-		return link + '?'
+		return link
 
 	def _format_value(self, attribute_name, val):
 
@@ -121,8 +121,6 @@ class AdFactory(object):
 
 	def __init__(self, **kwargs):
 		self.attributes = self.default_attributes.copy()
-		self.tile = 0
-		self.random = str(randint(1, 10000))
 		self.set(**kwargs)
 
 
@@ -130,13 +128,8 @@ class AdFactory(object):
 		self.attributes.update(kwargs)
 
 	def get(self, *args, **kwargs):
-		self.tile += 1
 
 		attr = self.attributes.copy()
-		attr.update({
-			'tile':self.tile,
-			'ord': self.random
-		})
 		attr.update(kwargs)
 
 		ad = Ad(*args, **attr)
