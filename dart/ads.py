@@ -29,7 +29,7 @@ class Ad(object):
 	default_site = DEFAULT_SITE
 	default_zone = DEFAULT_ZONE
 
-	def __init__(self, pos, size='0x0', **kwargs):
+	def __init__(self, pos, size='0x0', desc_text='', template='ad.html',**kwargs):
 		
 		try:
 			self.site = kwargs['site']
@@ -43,16 +43,8 @@ class Ad(object):
 		except KeyError:
 			self.zone = self.default_zone
 		
-		try: 
-			self.desc_text = kwargs['desc_text']
-		except KeyError:
-			self.desc_text = ''
-			
-		try: 
-			self.template = kwargs['template']
-		except KeyError:
-			self.template = 'ad.html'
-			
+		self.desc_text = desc_text
+		self.template = template
 
 		self.attributes = {}
 		self.attributes.update(kwargs)
