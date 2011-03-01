@@ -9,6 +9,6 @@ def get_ad(**kwargs):
 register.object(get_ad)
 
 def get_adfactory(**kwargs):
-	return AdFactory()
+	return AdFactory(**kwargs)
 
 register.object(get_adfactory)
