@@ -3,10 +3,12 @@
 	{% if desc_text %}<span class="presented_by">{{ desc_text }}</span>{% endif %}
 
 	<div><script type="text/javascript">
+<!--//
 		if (typeof window.dart_random_ord == 'undefined') { window.dart_random_ord = ('000000000' + Math.ceil(Math.random()*1000000000).toString()).slice(-9); }
 		if (typeof window.dart_tile == 'undefined') { window.dart_tile = 1 } else { window.dart_tile++ }
 		var this_ad_link = 'http://ad.doubleclick.net/adj/{{ link }}' + 'tile=' + window.dart_tile + ';ord=' + window.dart_random_ord + '?';
 		document.write('<' + 'script type="text/javascript" src="' + this_ad_link + '">' + '<' + '/script>'  )
+//-->
 	</script></div>
 	<noscript>
 	<div class="ad-container">
