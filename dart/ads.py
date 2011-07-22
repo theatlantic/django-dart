@@ -22,6 +22,13 @@ if hasattr(DART_AD_DEFAULTS, 'zone'):
 else:
 	DEFAULT_ZONE = 'zone'
 
+AD_TILES = {
+	'topleader'		: 1,
+	'topboxright'	: 2,
+	'logo'			: 3,
+	'bottomboxright': 5,
+}
+
 
 class Ad(object):
 	""" Base class for Ad and Ad_Factory, keeps track of assigned attributes """
@@ -50,6 +57,14 @@ class Ad(object):
 		self.attributes.update(kwargs)
 		self.attributes['pos'] = pos
 		self.attributes['sz'] = size
+		
+		if AD_TILES[pos]:
+			self.attributes['tile'] = AD_TILES[pos]
+		else :
+			self.attributes['tile'] = 100
+		
+		
+		
 
 	def get_zone(self):
 		return self._zone
@@ -100,6 +115,7 @@ class Ad(object):
 		link = self.get_link()
 		t = get_template(self.template)
 		c = Context({
+			'tile':self.attributes['tile'],
 			'pos': self.attributes['pos'],
 			'link': link,
 			'desc_text': self.desc_text
