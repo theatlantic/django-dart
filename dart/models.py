@@ -40,14 +40,10 @@ class Custom_Ad(models.Model):
 
 	url = models.URLField()
 	
-	image = CropDusterField(
-		null=True,
-		blank=True,
-		db_column='image_id'
-	)
+	image = models.ImageField(upload_to="img/upload/custom_ads", help_text="Image for custom ad")
 	
 	embed = models.TextField()
-	
+
 
 	class Meta:
 		verbose_name = 'Custom Ad'
@@ -62,12 +58,6 @@ class Zone_Position(models.Model):
 	zone = models.ForeignKey(Zone)
 	
 	custom_ad = models.ForeignKey(Custom_Ad, blank=True, null=True,)
-	
-	image = CropDusterField(
-		null=True,
-		blank=True,
-		db_column='image_id'
-	)
 	
 	class Meta:
 		verbose_name = 'Enabled Position'
