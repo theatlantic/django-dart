@@ -1,16 +1,42 @@
 from django.contrib import admin
+from cities.settings import ADMIN_MEDIA_PREFIX
+from dart.models import Zone, Position, Custom_Ad, Zone_Position
 
-from dart.models import AdSections, AdPositions, AdSectionPositions
+class Zone_PositionInline(admin.TabularInline):
+    model = Zone.position.through
 
-class AdSectionsAdmin(admin.ModelAdmin):
-	pass
 
-class AdPositionsAdmin(admin.ModelAdmin):
-	pass
+class Zone_Admin(admin.ModelAdmin):
+	prepopulated_fields = {"slug" : ('name',)}
+	css = {
+		'all': (
+			ADMIN_MEDIA_PREFIX + 'blog/css/autocomplete.css',
+		)
+	}
 	
-class AdSectionPositionsAdmin(admin.ModelAdmin):
+	fieldsets = (
+		(None, {
+			'fields': (
+				'name',
+				'slug',
+			)
+		}),
+	)
+	inlines = [
+        Zone_PositionInline,
+    ]
+
+class Position_Admin(admin.ModelAdmin):
+	prepopulated_fields = {"slug" : ('name',)}
+	css = {
+		'all': (
+			ADMIN_MEDIA_PREFIX + 'blog/css/autocomplete.css',
+		)
+	}
+	
+class Custom_Ad_Admin(admin.ModelAdmin):
 	pass
 
-admin.site.register(AdSections, AdSectionsAdmin)
-admin.site.register(AdSectionPositions, AdSectionPositionsAdmin)
-admin.site.register(AdPositions, AdPositionsAdmin)
+admin.site.register(Zone, Zone_Admin)
+admin.site.register(Custom_Ad, Custom_Ad_Admin)
+admin.site.register(Position, Position_Admin)
