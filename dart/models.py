@@ -23,9 +23,9 @@ class Position(models.Model):
 		
 class Zone(models.Model):
 
-	name = models.CharField(max_length=765) 
+	name = models.CharField(max_length=255) 
 
-	slug = models.CharField(max_length=765)
+	slug = models.CharField(max_length=255)
 	
 	position = models.ManyToManyField(Position, through='Zone_Position')
 
@@ -38,16 +38,21 @@ class Zone(models.Model):
 
 class Custom_Ad(models.Model):
 
+	name = models.CharField(max_length=255, default='')
+	
 	url = models.URLField()
 	
 	image = models.ImageField(upload_to="img/upload/custom_ads", help_text="Image for custom ad")
 	
-	embed = models.TextField()
+	embed = models.TextField(blank=True, null=True)
 
 
 	class Meta:
 		verbose_name = 'Custom Ad'
 		verbose_name_plural = 'Custom Ads'
+		
+	def __unicode__(self):
+		return u"%s" % self.name
 
 class Zone_Position(models.Model):
 
@@ -117,14 +122,14 @@ class Ad_Page(object):
 	def get(self, pos, size='0x0', desc_text='', template='ad.html', **kwargs):
 		""" main class to get ad tag """
 		
-		ad = Zone_Position.objects.filter(position__slug=pos, zone__slug=self.zone )
+		ad = Zone_Position.objects.all().filter(position__slug=pos, zone__slug=self.zone )[0]
 		
 		if ad:
-		
 			if hasattr(ad, "custom_ad"):
-				if hasattr(ad.custom_ad, "embed"):
+				if len(ad.custom_ad.embed) > 0:
 					return ad.custom_ad.embed
 				else :
+
 					t = loader.get_template('embed.html')
 					c = Context({
 						'pos': pos,
