@@ -49,8 +49,6 @@ class Custom_Ad(models.Model):
 		verbose_name = 'Custom Ad'
 		verbose_name_plural = 'Custom Ads'
 
-
-
 class Zone_Position(models.Model):
 
 	position = models.ForeignKey(Position)
