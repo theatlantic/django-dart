@@ -149,5 +149,5 @@ class Ad_Page(object):
 				})
 				return t.render(c)
 		else :
-			return None
+			return ''
 	
