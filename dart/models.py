@@ -121,8 +121,8 @@ class Ad_Page(object):
 		
 		if ad:
 		
-			if ad.custom_ad:
-				if ad.custom_ad.embed:
+			if hasattr(ad, "custom_ad"):
+				if hasattr(ad.custom_ad, "embed"):
 					return ad.custom_ad.embed
 				else :
 					t = loader.get_template('embed.html')
