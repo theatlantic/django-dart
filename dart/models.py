@@ -122,7 +122,11 @@ class Ad_Page(object):
 	def get(self, pos, size='0x0', desc_text='', template='ad.html', **kwargs):
 		""" main class to get ad tag """
 		
-		ad = Zone_Position.objects.all().filter(position__slug=pos, zone__slug=self.zone )[0]
+		
+		try:
+			ad = Zone_Position.objects.all().filter(position__slug=pos, zone__slug=self.zone )[0]
+		except:
+			ad = None
 		
 		if ad:
 			if hasattr(ad, "custom_ad"):
