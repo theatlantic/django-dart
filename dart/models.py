@@ -62,6 +62,9 @@ class Zone_Position(models.Model):
 	
 	custom_ad = models.ForeignKey(Custom_Ad, blank=True, null=True,)
 	
+	def __unicode__(self):
+		return u"%s: %s" % (self.zone, self.position)
+	
 	class Meta:
 		verbose_name = 'Enabled Position'
 		verbose_name_plural = 'Enabled Positions'
@@ -119,22 +122,21 @@ class Ad_Page(object):
 		return formatted
 	
 	
-	def get(self, pos, size='0x0', desc_text='', template='ad.html', **kwargs):
+	def get(self, pos, size='0x0', desc_text='', template='dart/ad.html', **kwargs):
 		""" main class to get ad tag """
 		
 		
 		try:
-			ad = Zone_Position.objects.all().filter(position__slug=pos, zone__slug=self.zone )[0]
+			ad = Zone_Position.objects.all().filter(position__slug=pos, zone__slug__in=(self.zone,"ros") )[0]
 		except:
 			ad = None
 		
 		if ad:
-			if hasattr(ad, "custom_ad"):
-				if len(ad.custom_ad.embed) > 0:
+			if ad.custom_ad:
+				if ad.custom_ad.embed:
 					return ad.custom_ad.embed
 				else :
-
-					t = loader.get_template('embed.html')
+					t = loader.get_template('dart/embed.html')
 					c = Context({
 						'pos': pos,
 						'link': ad.custom_ad.url,
