@@ -4,7 +4,7 @@ from django.template.defaultfilters import slugify
 
 from coffin.template import Context, loader
 
-from settings import DART_AD_DEFAULTS
+from settings import DART_AD_DEFAULTS, UPLOAD_PATH
 
 
 class Position(models.Model):
@@ -42,7 +42,7 @@ class Custom_Ad(models.Model):
 	
 	url = models.URLField()
 	
-	image = models.ImageField(upload_to="img/upload/custom_ads", help_text="Image for custom ad")
+	image = models.ImageField(upload_to=UPLOAD_PATH + "custom_ads", help_text="Image for custom ad")
 	
 	embed = models.TextField(blank=True, null=True)
 
