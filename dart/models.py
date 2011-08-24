@@ -122,14 +122,19 @@ class Ad_Page(object):
 		return formatted
 	
 	
+	def has_ad(self, pos, **kwargs):
+		try:
+			return Zone_Position.objects.all().filter(position__slug=pos, zone__slug__in=(self.zone,"ros") )[0]
+		except:
+			return None
+	
 	def get(self, pos, size='0x0', desc_text='', template='dart/ad.html', **kwargs):
 		""" main class to get ad tag """
-		
-		
-		try:
-			ad = Zone_Position.objects.all().filter(position__slug=pos, zone__slug__in=(self.zone,"ros") )[0]
-		except:
-			ad = None
+	
+		if 'ad' in kwargs:
+			ad = kwargs['ad']
+		else :
+			ad = self.has_ad(pos, **kwargs)
 		
 		if ad:
 			if ad.custom_ad:
