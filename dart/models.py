@@ -77,9 +77,10 @@ class Ad_Page(object):
 	attributes = DART_AD_DEFAULTS
 	_tile = 1
 
-	def __init__(self, site='site', zone='zone', *args, **kwargs):
+	def __init__(self, site='site', zone='zone', ad_manager_enabled=True, *args, **kwargs):
 		self.site = site
 		self.zone = zone
+		self.ad_manager_enabled = ad_manager_enabled
 		self.attributes.update(kwargs)
 			
 	def tile(self):
@@ -127,43 +128,48 @@ class Ad_Page(object):
 			return Zone_Position.objects.all().filter(position__slug=pos, zone__slug__in=(self.zone,"ros") )[0]
 		except:
 			return None
+			
+	def _render_js_ad(self, pos, size, desc_text, template, **kwargs):
+		self.attributes.update(kwargs)
+		self.attributes['pos'] = pos
+		self.attributes['sz'] = size
+		
+		link = self.get_link()
+
+		t = loader.get_template(template)
+		c = Context({
+			'pos': pos,
+			'link': link,
+			'tile': self.tile(),
+			'desc_text': desc_text
+		})
+		return t.render(c)
 	
 	def get(self, pos, size='0x0', desc_text='', template='dart/ad.html', **kwargs):
 		""" main class to get ad tag """
-	
-		if 'ad' in kwargs:
-			ad = kwargs['ad']
-		else :
-			ad = self.has_ad(pos, **kwargs)
-		
-		if ad:
-			if ad.custom_ad:
-				if ad.custom_ad.embed:
-					return ad.custom_ad.embed
-				else :
-					t = loader.get_template('dart/embed.html')
-					c = Context({
-						'pos': pos,
-						'link': ad.custom_ad.url,
-						'image': ad.custom_ad.image,
-						'desc_text': desc_text
-					})
-					return t.render(c)
-			else:
-				self.attributes.update(kwargs)
-				self.attributes['pos'] = pos
-				self.attributes['sz'] = size
-				
-				link = self.get_link()
-		
-				t = loader.get_template(template)
-				c = Context({
-					'pos': pos,
-					'link': link,
-					'tile': self.tile(),
-					'desc_text': desc_text
-				})
-				return t.render(c)
-		else :
-			return ''
+		if not self.ad_manager_enabled:
+			self._render_js_ad(pos, size, desc_text, template, kwargs)
+		else:
+			if 'ad' in kwargs:
+				ad = kwargs['ad']
+			else :
+				ad = self.has_ad(pos, **kwargs)
+			
+			if ad:
+				if ad.custom_ad:
+					if ad.custom_ad.embed:
+						return ad.custom_ad.embed
+					else :
+						t = loader.get_template('dart/embed.html')
+						c = Context({
+							'pos': pos,
+							'link': ad.custom_ad.url,
+							'image': ad.custom_ad.image,
+							'desc_text': desc_text
+						})
+						return t.render(c)
+				else:
+					self._render_js_ad(pos, size, desc_text, template, kwargs)
+			else :
+				return ''
 	
