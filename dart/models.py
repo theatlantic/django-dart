@@ -73,15 +73,16 @@ class Zone_Position(models.Model):
 
 class Ad_Page(object):
 	""" Base class for Ad and Ad_Factory, keeps track of assigned attributes """
-
+	
 	attributes = DART_AD_DEFAULTS
 	_tile = 1
 
-	def __init__(self, site='site', zone='zone', ad_manager_enabled=True, *args, **kwargs):
+	def __init__(self, site='site', zone='zone', *args, **kwargs):
 		self.site = site
 		self.zone = zone
-		self.ad_manager_enabled = ad_manager_enabled
 		self.attributes.update(kwargs)
+		
+		
 			
 	def tile(self):
 		return self._tile
@@ -147,8 +148,9 @@ class Ad_Page(object):
 	
 	def get(self, pos, size='0x0', desc_text='', template='dart/ad.html', **kwargs):
 		""" main class to get ad tag """
-		if not self.ad_manager_enabled:
-			self._render_js_ad(pos, size, desc_text, template, kwargs)
+		
+		if "disable_ad_manager" in self.attributes and  self.attributes['disable_ad_manager']:
+			return self._render_js_ad(pos, size, desc_text, template)
 		else:
 			if 'ad' in kwargs:
 				ad = kwargs['ad']
@@ -169,7 +171,7 @@ class Ad_Page(object):
 						})
 						return t.render(c)
 				else:
-					self._render_js_ad(pos, size, desc_text, template, kwargs)
+					return self._render_js_ad(pos, size, desc_text, template)
 			else :
 				return ''
 	
