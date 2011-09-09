@@ -4,7 +4,7 @@ from django.template.defaultfilters import slugify
 
 from coffin.template import Context, loader
 
-from settings import DART_AD_DEFAULTS, UPLOAD_PATH
+from settings import UPLOAD_PATH
 
 
 class Position(models.Model):
@@ -74,12 +74,18 @@ class Zone_Position(models.Model):
 class Ad_Page(object):
 	""" Base class for Ad and Ad_Factory, keeps track of assigned attributes """
 	
-	attributes = DART_AD_DEFAULTS
+	attributes = {}
 	_tile = 1
+	disable_ad_manager = False
 
-	def __init__(self, site='site', zone='zone', *args, **kwargs):
-		self.site = site
-		self.zone = zone
+	def __init__(self, settings={}, site=None, zone=None, disable_ad_manager=None, *args, **kwargs):
+
+		for setting in settings:
+			self.__setattr__(setting, settings[setting])
+			
+		if site: self.site = site
+		if zone: self.zone = zone
+		if disable_ad_manager: self.disable_ad_manager = disable_ad_manager
 		self.attributes.update(kwargs)
 		
 		
@@ -148,8 +154,8 @@ class Ad_Page(object):
 	
 	def get(self, pos, size='0x0', desc_text='', template='dart/ad.html', **kwargs):
 		""" main class to get ad tag """
-		
-		if "disable_ad_manager" in self.attributes and  self.attributes['disable_ad_manager']:
+
+		if self.disable_ad_manager:
 			return self._render_js_ad(pos, size, desc_text, template)
 		else:
 			if 'ad' in kwargs:
