@@ -156,7 +156,7 @@ class Ad_Page(object):
 		""" main class to get ad tag """
 
 		if self.disable_ad_manager:
-			return self._render_js_ad(pos, size, desc_text, template)
+			return self._render_js_ad(pos, size, desc_text, template, **kwargs)
 		else:
 			if 'ad' in kwargs:
 				ad = kwargs['ad']
@@ -177,7 +177,7 @@ class Ad_Page(object):
 						})
 						return t.render(c)
 				else:
-					return self._render_js_ad(pos, size, desc_text, template)
+					return self._render_js_ad(pos, size, desc_text, template, **kwargs)
 			else :
 				return ''
 	
