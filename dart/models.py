@@ -75,7 +75,7 @@ class Ad_Page(object):
 	""" Base class for Ad and Ad_Factory, keeps track of assigned attributes """
 	
 	attributes = {}
-	_tile = 1
+	_tile = 0
 	disable_ad_manager = False
 
 	def __init__(self, settings={}, site=None, zone=None, disable_ad_manager=None, *args, **kwargs):
@@ -91,8 +91,9 @@ class Ad_Page(object):
 		
 			
 	def tile(self):
-		return self._tile
 		self._tile = self._tile + 1
+		return self._tile
+		
 
 	def get_link(self):
 		link = '%s/%s;' % (self.site, self.zone)
@@ -180,4 +181,3 @@ class Ad_Page(object):
 					return self._render_js_ad(pos, size, desc_text, template, **kwargs)
 			else :
 				return ''
-	
