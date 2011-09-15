@@ -95,10 +95,10 @@ class Ad_Page(object):
 		return self._tile
 		
 
-	def get_link(self):
+	def get_link(self, **kwargs):
 		link = '%s/%s;' % (self.site, self.zone)
 
-		for attr, val in self.attributes.items():
+		for attr, val in self.attributes.items() + kwargs.items():
 
 			# if it is a non-string iteratible object
 			if hasattr(val, '__iter__'):
@@ -138,19 +138,24 @@ class Ad_Page(object):
 			return None
 			
 	def _render_js_ad(self, pos, size, desc_text, template, **kwargs):
-		self.attributes.update(kwargs)
+		
+		
 		self.attributes['pos'] = pos
 		self.attributes['sz'] = size
+		link = self.get_link(**kwargs)
 		
-		link = self.get_link()
-
-		t = loader.get_template(template)
-		c = Context({
+		context_vars = {
 			'pos': pos,
 			'link': link,
 			'tile': self.tile(),
 			'desc_text': desc_text
-		})
+		}
+		context_vars.update(kwargs)
+		
+		
+
+		t = loader.get_template(template)
+		c = Context(context_vars)
 		return t.render(c)
 	
 	def get(self, pos, size='0x0', desc_text='', template='dart/ad.html', **kwargs):
