@@ -157,11 +157,21 @@ class Ad_Page(object):
 		t = loader.get_template(template)
 		c = Context(context_vars)
 		return t.render(c)
+
+	def _iframe_url(self, pos, size, desc_text, template, **kwargs):
+		
+		self.attributes['pos'] = pos
+		self.attributes['sz'] = size
+		link = "/ad/"+self.get_link(**kwargs)
+
+		return link
 	
 	def get(self, pos, size='0x0', desc_text='', template='dart/ad.html', **kwargs):
 		""" main class to get ad tag """
 
 		if self.disable_ad_manager:
+			if pos == 'sharing':
+				return self._iframe_url(pos, size, desc_text, template, **kwargs)			
 			return self._render_js_ad(pos, size, desc_text, template, **kwargs)
 		else:
 			if 'ad' in kwargs:
