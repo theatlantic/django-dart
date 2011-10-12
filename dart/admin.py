@@ -1,5 +1,5 @@
 from django.contrib import admin
-from cities.settings import ADMIN_MEDIA_PREFIX
+from settings import ADMIN_MEDIA_PREFIX
 from dart.models import Zone, Position, Custom_Ad, Zone_Position
 
 class Zone_PositionInline(admin.TabularInline):
