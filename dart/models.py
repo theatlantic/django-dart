@@ -99,7 +99,8 @@ class Ad_Page(object):
 		link = '%s/%s;' % (self.site, self.zone)
 
 		for attr, val in self.attributes.items() + kwargs.items():
-
+			if attr == "title":
+				continue
 			# if it is a non-string iteratible object
 			if hasattr(val, '__iter__'):
 				link += self._format_multiple_values(attr, val)
