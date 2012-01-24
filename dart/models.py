@@ -1,10 +1,32 @@
 from django.db import models
 from cropduster.models import CropDusterField
 from django.template.defaultfilters import slugify
-
+from ckeditor.fields import RichTextField
 from coffin.template import Context, loader
 
 from settings import UPLOAD_PATH
+
+STANDARD_AD_SIZES = (
+	(0, "Any Size | 0x0"),
+	(1, "Custom Size"),
+	(2, "Large Rectangle | 336x280"),
+	(3, "Medium Rectangle | 300x250"),
+	(4, "Square Pop-up | 250x250"),
+	(5, "Vertical Rectangle | 240x400"),
+	(6, "Rectangle | 180x150"),
+	(7, "Leaderboard | 728x90"),
+	(8, "Full Banner | 468x60"),
+	(9, "Half Banner | 234x60"),
+	(10, "Button 1 | 120x90"),
+	(11, "Button 2 | 120x60"),
+	(12, "Micro Bar | 88x31"),
+	(13, "Micro Button | 80x15"),
+	(14, "Vertical Banner | 120x240"),
+	(15, "Square Button | 125x125"),
+	(16, "Skyscraper | 120x600"),
+	(17, "Wide Skyscraper | 160x600"),
+	(18, "Half-Page | 300x600")
+)
 
 
 class Position(models.Model):
@@ -13,7 +35,11 @@ class Position(models.Model):
 
 	slug = models.CharField(max_length=255) 
 
-	size = models.CharField(max_length=255)
+	size = models.IntegerField(choices=STANDARD_AD_SIZES, default=0)
+
+	width = models.IntegerField(default=0, null=False, blank=False, help_text="Use zero for unknown/variable values")
+	
+	height = models.IntegerField(default=0, null=False, blank=False, help_text="Use zero for unknown/variable values")
 
 	class Meta:
 		verbose_name_plural = 'Ad Positions'
@@ -40,12 +66,11 @@ class Custom_Ad(models.Model):
 
 	name = models.CharField(max_length=255, default='')
 	
-	url = models.URLField()
+	url = models.URLField(null=True, blank=True, help_text="Click tag link")
 	
-	image = models.ImageField(upload_to=UPLOAD_PATH + "custom_ads", help_text="Image for custom ad")
+	image = models.ImageField(null=True, blank=True, upload_to=UPLOAD_PATH + "custom_ads", help_text="Image for custom ad")
 	
-	embed = models.TextField(blank=True, null=True)
-
+	embed = RichTextField(null=True, blank=True)
 
 	class Meta:
 		verbose_name = 'Custom Ad'
@@ -169,17 +194,22 @@ class Ad_Page(object):
 	def get(self, pos, size='0x0', desc_text='', template='dart/ad.html', **kwargs):
 		""" main class to get ad tag """
 
+		# if ad manager is disabled, it goes straight to displaying the iframe/js code		
 		if self.disable_ad_manager:
 			if pos == 'sharing':
 				return self._iframe_url(pos, size, desc_text, template, **kwargs)			
 			return self._render_js_ad(pos, size, desc_text, template, **kwargs)
+		
+		
 		else:
+			
 			if 'ad' in kwargs:
 				ad = kwargs['ad']
 			else :
 				ad = self.has_ad(pos, **kwargs)
 			
 			if ad:
+				# Check for a custom ad, otherwise load the DART code
 				if ad.custom_ad:
 					if ad.custom_ad.embed:
 						return ad.custom_ad.embed
