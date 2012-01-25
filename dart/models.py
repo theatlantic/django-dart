@@ -79,7 +79,7 @@ class Ad_Page(object):
 	disable_ad_manager = False
 
 	def __init__(self, settings={}, site=None, zone=None, disable_ad_manager=None, *args, **kwargs):
-
+		self.attributes = {}
 		for setting in settings:
 			self.__setattr__(setting, settings[setting])
 			
@@ -87,8 +87,6 @@ class Ad_Page(object):
 		if zone: self.zone = zone
 		if disable_ad_manager: self.disable_ad_manager = disable_ad_manager
 		self.attributes.update(kwargs)
-		
-		
 			
 	def tile(self):
 		self._tile = self._tile + 1
