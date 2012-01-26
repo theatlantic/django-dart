@@ -242,7 +242,7 @@ class Ad_Page(object):
 		# Mainly here as a failsafe in case things are not configured right in the Admin
 		
 		if self.disable_ad_manager:			
-			return self._render_js_ad(pos, size, kwargs)
+			return self._render_js_ad(pos, kwargs)
 		
 		else:
 			if not ad:
@@ -251,6 +251,6 @@ class Ad_Page(object):
 				if ad.custom_ad:
 					return self._render_custom_ad(pos, ad.custom_ad, kwargs)
 				elif custom_only == False:
-					return self._render_js_ad(pos, size, template, kwargs)
+					return self._render_js_ad(pos, kwargs)
 			else :
 				return ""
