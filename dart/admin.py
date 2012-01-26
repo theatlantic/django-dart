@@ -38,7 +38,6 @@ class Position_Admin(admin.ModelAdmin):
 		
 		js = (
 			reverse_lazy("dart_static", args=("position.js",)),
-				
 		)
 	
 	fieldsets = (
@@ -52,9 +51,11 @@ class Position_Admin(admin.ModelAdmin):
 	)
 	
 class Custom_Ad_Admin(admin.ModelAdmin):
+	prepopulated_fields = {"slug" : ('name',)}
+	
 	fieldsets = (
 		(None, {
-			"fields": ("name", )
+			"fields": ("name", "slug",  )
 		}),
 		("Image/URL", {
 			"description": "Upload an image and a URL for a simple linked image ad unit",
@@ -66,6 +67,10 @@ class Custom_Ad_Admin(admin.ModelAdmin):
 			"description": "Use this section to write custom HTML that would not otherwise be covered by the image/URL format. Overrides anything set in the image/URL section.",
 			"classes": ("collapse closed sizes",),
 			"fields": ("embed",)
+		}),
+		("Text Version", {
+			"classes": ("collapse sizes",),
+			"fields": ("text_version",)
 		}),
 	)
 

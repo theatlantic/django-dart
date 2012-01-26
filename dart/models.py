@@ -42,10 +42,10 @@ class Position(models.Model):
 	height = models.IntegerField(default=0, null=False, blank=False, help_text="Use zero for unknown/variable values")
 
 	class Meta:
-		verbose_name_plural = 'Ad Positions'
+		verbose_name_plural = "Ad Positions"
 		
 	def __unicode__(self):
-		return u'%s' % self.name
+		return u"%s" % self.name
 		
 class Zone(models.Model):
 
@@ -53,28 +53,32 @@ class Zone(models.Model):
 
 	slug = models.CharField(max_length=255)
 	
-	position = models.ManyToManyField(Position, through='Zone_Position')
+	position = models.ManyToManyField(Position, through="Zone_Position")
 
 	class Meta:
-		verbose_name_plural = 'Ad Zones'
+		verbose_name_plural = "Ad Zones"
 		
 	def __unicode__(self):
-		return u'%s' % self.name		
+		return u"%s" % self.name		
 
 
 class Custom_Ad(models.Model):
 
-	name = models.CharField(max_length=255, default='')
+	name = models.CharField(max_length=255, default="")
+	
+	slug = models.CharField(max_length=255)
 	
 	url = models.URLField(null=True, blank=True, help_text="Click tag link")
 	
 	image = models.ImageField(null=True, blank=True, upload_to=UPLOAD_PATH + "custom_ads", help_text="Image for custom ad")
 	
 	embed = RichTextField(null=True, blank=True)
+	
+	text_version = models.TextField(blank=True, help_text="Text version of ad for newsletters or Javascript disabled browsers")
 
 	class Meta:
-		verbose_name = 'Custom Ad'
-		verbose_name_plural = 'Custom Ads'
+		verbose_name = "Custom Ad"
+		verbose_name_plural = "Custom Ads"
 		
 	def __unicode__(self):
 		return u"%s" % self.name
@@ -91,8 +95,8 @@ class Zone_Position(models.Model):
 		return u"%s: %s" % (self.zone, self.position)
 	
 	class Meta:
-		verbose_name = 'Enabled Position'
-		verbose_name_plural = 'Enabled Positions'
+		verbose_name = "Enabled Position"
+		verbose_name_plural = "Enabled Positions"
 
 		
 
@@ -109,7 +113,9 @@ class Ad_Page(object):
 			self.__setattr__(setting, settings[setting])
 			
 		if site: self.site = site
+		
 		if zone: self.zone = zone
+		
 		if disable_ad_manager: self.disable_ad_manager = disable_ad_manager
 		self.attributes.update(kwargs)
 		
@@ -121,12 +127,12 @@ class Ad_Page(object):
 		
 
 	def get_link(self, **kwargs):
-		link = '%s/%s;' % (self.site, self.zone)
+		link = "%s/%s;" % (self.site, self.zone)
 
 		for attr, val in self.attributes.items() + kwargs.items():
 
 			# if it is a non-string iteratible object
-			if hasattr(val, '__iter__'):
+			if hasattr(val, "__iter__"):
 				link += self._format_multiple_values(attr, val)
 			else:
 				link += self._format_value(attr, val)
@@ -135,20 +141,20 @@ class Ad_Page(object):
 
 	def _format_value(self, attribute_name, val):
 
-		if attribute_name != 'sz':
+		if attribute_name != "sz":
 			val = slugify(val)
 
 		return "%s=%s;" % (attribute_name, val)
 
 	def _format_multiple_values(self, attr, values):
 
-		formatted = ''
-		index = ''
+		formatted = ""
+		index = ""
 		for val in values:
 			enumerated_attr = attr + str(index)
 			formatted += self._format_value(enumerated_attr, val)
 
-			if index == '':
+			if index == "":
 				index = 1
 				
 			index += 1
@@ -156,73 +162,94 @@ class Ad_Page(object):
 		return formatted
 	
 	
-	def has_ad(self, pos, **kwargs):
+	def has_ad(self, pos, custom_ad=False, **kwargs):
 		try:
-			return Zone_Position.objects.all().filter(position__slug=pos, zone__slug__in=(self.zone,"ros") )[0]
+			qs = Zone_Position.objects.all().filter(position__slug=pos, zone__slug__in=(self.zone,"ros"))
+			if custom_ad:
+				qs = qs.filter(custom_ad__isnull=False)
+			return qs[0]
 		except:
 			return None
 			
-	def _render_js_ad(self, pos, size, desc_text, template, **kwargs):
+	def _render_js_ad(self, pos, size="0x0", template="dart/ad.html", desc_text="", **kwargs):
 		
-		
-		self.attributes['pos'] = pos
-		self.attributes['sz'] = size
+		self.attributes["pos"] = pos
+		self.attributes["sz"] = size
 		link = self.get_link(**kwargs)
 		
 		context_vars = {
-			'pos': pos,
-			'link': link,
-			'tile': self.tile(),
-			'desc_text': desc_text
+			"pos": pos,
+			"link": link,
+			"tile": self.tile(),
+			"desc_text": desc_text
 		}
 		context_vars.update(kwargs)
 		
-		
-
 		t = loader.get_template(template)
 		c = Context(context_vars)
 		return t.render(c)
 
-	def _iframe_url(self, pos, size, desc_text, template, **kwargs):
+	def _iframe_url(self, pos, size, **kwargs):
 		
-		self.attributes['pos'] = pos
-		self.attributes['sz'] = size
-		link = "/ad/"+self.get_link(**kwargs)
+		self.attributes["pos"] = pos
+		self.attributes["sz"] = size
+		link = "/ad/" + self.get_link(**kwargs)
 
 		return link
-	
-	def get(self, pos, size='0x0', desc_text='', template='dart/ad.html', **kwargs):
-		""" main class to get ad tag """
-
-		# if ad manager is disabled, it goes straight to displaying the iframe/js code		
-		if self.disable_ad_manager:
-			if pos == 'sharing':
-				return self._iframe_url(pos, size, desc_text, template, **kwargs)			
-			return self._render_js_ad(pos, size, desc_text, template, **kwargs)
 		
+	def get_custom_ad(self, slug, pos, **kwargs):
+		try:
+			custom_ad = Custom_Ad.objects.get(slug=slug)
+			return _render_custom_ad(pos, custom_ad, kwargs)
+			
+		except Custom_Ad.DoesNotExist:
+			return ""
+			
+	
+	def _render_custom_ad(self, pos, custom_ad, text_version=False, desc_text="", **kwargs):
+		if text_version:
+			return custom_ad.text_version
+		elif custom_ad.embed:
+			return custom_ad.embed
+		else :
+			t = loader.get_template("dart/embed.html")
+			c = Context({
+				"pos": pos,
+				"link": custom_ad.url,
+				"image": custom_ad.image,
+				"desc_text": desc_text
+			})
+			return t.render(c)
+	
+	def get(self, pos, ad=None, custom_only=False, **kwargs):
+		""" Main class to get ad tag """
+		""" All Keyword Configuration variables
+			pos -- Ad position slug as defined in Zone_Position
+			ad -- A predefined ad, if needed
+			size -- Limit ads by size, 0x0 is a wildcard
+			custom_only -- Only deliver a custom ad, don"t use DART
+			
+			Keyword variables passed on to other functions
+			
+			template -- Template used to render the ad, defaults to basic JS embed
+			desc_text -- Text that comes before ad, declaring who the sponsor is
+			text_version -- Only deliver text version for a custom ad
+		
+		"""
+
+		# If ad manager is disabled, it goes straight to displaying the iframe/js code
+		# Mainly here as a failsafe in case things are not configured right in the Admin
+		
+		if self.disable_ad_manager:			
+			return self._render_js_ad(pos, size, kwargs)
 		
 		else:
-			
-			if 'ad' in kwargs:
-				ad = kwargs['ad']
-			else :
+			if not ad:
 				ad = self.has_ad(pos, **kwargs)
-			
 			if ad:
-				# Check for a custom ad, otherwise load the DART code
 				if ad.custom_ad:
-					if ad.custom_ad.embed:
-						return ad.custom_ad.embed
-					else :
-						t = loader.get_template('dart/embed.html')
-						c = Context({
-							'pos': pos,
-							'link': ad.custom_ad.url,
-							'image': ad.custom_ad.image,
-							'desc_text': desc_text
-						})
-						return t.render(c)
-				else:
-					return self._render_js_ad(pos, size, desc_text, template, **kwargs)
+					return self._render_custom_ad(pos, ad.custom_ad, kwargs)
+				elif custom_only == False:
+					return self._render_js_ad(pos, size, template, kwargs)
 			else :
-				return ''
+				return ""
