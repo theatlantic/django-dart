@@ -201,7 +201,7 @@ class Ad_Page(object):
 	def get_custom_ad(self, slug, pos, **kwargs):
 		try:
 			custom_ad = Custom_Ad.objects.get(slug=slug)
-			return _render_custom_ad(pos, custom_ad, kwargs)
+			return _render_custom_ad(pos, custom_ad, **kwargs)
 			
 		except Custom_Ad.DoesNotExist:
 			return ""
@@ -242,15 +242,15 @@ class Ad_Page(object):
 		# Mainly here as a failsafe in case things are not configured right in the Admin
 		
 		if self.disable_ad_manager:			
-			return self._render_js_ad(pos, kwargs)
+			return self._render_js_ad(pos, **kwargs)
 		
 		else:
 			if not ad:
 				ad = self.has_ad(pos, **kwargs)
 			if ad:
 				if ad.custom_ad:
-					return self._render_custom_ad(pos, ad.custom_ad, kwargs)
+					return self._render_custom_ad(pos, ad.custom_ad, **kwargs)
 				elif custom_only == False:
-					return self._render_js_ad(pos, kwargs)
+					return self._render_js_ad(pos, **kwargs)
 			else :
 				return ""
