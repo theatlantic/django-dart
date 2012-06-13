@@ -5,10 +5,9 @@ from django.template.defaultfilters import slugify
 from coffin.template import Context
 from coffin.template.loader import get_template
 
-from settings import DART_AD_DEFAULTS
+from django.conf import settings
 
-if not DART_AD_DEFAULTS:
-	DART_AD_DEFAULTS = {}
+DART_AD_DEFAULTS = getattr(settings, 'DART_AD_DEFAULTS', {})
 
 if hasattr(DART_AD_DEFAULTS, 'site'):
 	DEFAULT_SITE = DART_AD_DEFAULTS['site']
