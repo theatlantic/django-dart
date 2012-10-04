@@ -74,14 +74,19 @@ class Zone_Position(models.Model):
 class Ad_Page(object):
 	""" Base class for Ad and Ad_Factory, keeps track of assigned attributes """
 	
-	attributes = {}
+	attributes = None
 	_tile = 0
 	disable_ad_manager = False
 
-	def __init__(self, settings={}, site=None, zone=None, disable_ad_manager=None, *args, **kwargs):
+	def __init__(self, settings=None, site=None, zone=None, disable_ad_manager=None, *args, **kwargs):
+		self.attributes = {}
 
-		for setting in settings:
-			self.__setattr__(setting, settings[setting])
+		# We don't want to set self.attributes 
+		settings.pop('attributes', None)
+
+		if settings is not None:
+			for setting in settings:
+				setattr(self, setting, settings[setting])
 			
 		if site: self.site = site
 		if zone: self.zone = zone
