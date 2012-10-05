@@ -79,18 +79,9 @@ class Ad(object):
 		return "%s=%s;" % (attribute_name, val)
 
 	def _format_multiple_values(self, attr, values):
-
-		formatted = ''
-		index = ''
+		formatted = u''
 		for val in values:
-			enumerated_attr = attr + str(index)
-			formatted += self._format_value(enumerated_attr, val)
-
-			if index == '':
-				index = 1
-				
-			index += 1
-
+			formatted = u'%s%s' % (formatted, self._format_value(attr, val))
 		return formatted
 
 	def __unicode__(self):
