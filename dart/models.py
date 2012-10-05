@@ -122,14 +122,10 @@ class Ad_Page(object):
 
 	def _format_multiple_values(self, attr, values):
 
-		formatted = None
+		formatted = u''
 		for val in values:
-			val = slugify(val)
-			if formatted is None:
-				formatted = u'{key}={val}'.format(key=attr, val=val)
-			else:
-				formatted = u'{prev},{key}={val}'.format(prev=formatted, key=attr, val=val) 
-		return u'{0};'.format(formatted)
+			formatted = u'%s%s' % (formatted, self._format_value(attr, val))
+		return formatted
 	
 	
 	def has_ad(self, pos, **kwargs):
