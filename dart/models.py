@@ -77,6 +77,7 @@ class Ad_Page(object):
 	attributes = None
 	_tile = 0
 	disable_ad_manager = False
+	dfp_id = None
 
 	def __init__(self, settings=None, site=None, zone=None, disable_ad_manager=None, *args, **kwargs):
 		self.attributes = {}
@@ -145,6 +146,7 @@ class Ad_Page(object):
 			'pos': pos,
 			'link': link,
 			'tile': self.tile(),
+			'dfp_id': "/%s" % self.dfp_id if self.dfp_id is not None else '',
 			'desc_text': desc_text
 		}
 		context_vars.update(kwargs)
