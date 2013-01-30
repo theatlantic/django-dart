@@ -108,8 +108,6 @@ class Ad(object):
 			'dfp_id': '/%s' % self.dfp_id if self.dfp_id is not None else '',
 			'desc_text': self.desc_text
 		})
-		from pprint import pprint
-		pprint(c)
 		return t.render(c)
 
 class AdFactory(object):
