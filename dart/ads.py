@@ -21,12 +21,18 @@ if hasattr(DART_AD_DEFAULTS, 'zone'):
 else:
 	DEFAULT_ZONE = 'zone'
 
+if hasattr(DART_AD_DEFAULTS, 'dfp_id'):
+	DEFAULT_ID = DART_AD_DEFAULTS['dfp_id']
+	del(DART_AD_DEFAULTS['dfp_id'])
+else:
+	DEFAULT_ID = None
 
 class Ad(object):
 	""" Base class for Ad and Ad_Factory, keeps track of assigned attributes """
 
 	default_site = DEFAULT_SITE
 	default_zone = DEFAULT_ZONE
+	default_id = DEFAULT_ID
 
 	def __init__(self, pos, size='0x0', desc_text='', template='ad.html',**kwargs):
 		
@@ -41,6 +47,13 @@ class Ad(object):
 			del(kwargs['zone'])
 		except KeyError:
 			self.zone = self.default_zone
+
+		try:
+			self.dfp_id = kwargs['dfp_id']
+			del(kwargs['dfp_id'])
+		except:
+			self.dfp_id = self.default_id
+		
 		
 		self.desc_text = desc_text
 		self.template = template
@@ -92,8 +105,11 @@ class Ad(object):
 		c = Context({
 			'pos': self.attributes['pos'],
 			'link': link,
+			'dfp_id': '/%s' % self.dfp_id if self.dfp_id is not None else '',
 			'desc_text': self.desc_text
 		})
+		from pprint import pprint
+		pprint(c)
 		return t.render(c)
 
 class AdFactory(object):
