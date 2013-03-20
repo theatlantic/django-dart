@@ -1,10 +1,10 @@
 <div class="ad ad-{{ pos }}">
-
 	{% if desc_text %}<span class="presented-by">{{ desc_text }}</span>{% endif %}
 
 	<div class="ad-container">
 		<script type="text/javascript">
 //<![CDATA[
+{% if callback %}var show{{ pos }} = function () { {% endif %}
 if (typeof window.dart_random_ord == 'undefined') { 
 	window.dart_random_ord = ('000000000' + Math.ceil(Math.random() * 1000000000).toString()).slice(-9); 
 }
@@ -12,6 +12,7 @@ if (typeof window.dart_random_ord == 'undefined') {
 var this_ad_link = 'http://ad.doubleclick.net{{ dfp_id }}/adj/{{ link }}tile={{ tile }};ord=' + window.dart_random_ord + '?';
 
 document.write('<' + 'script type="text/javascript" src="' + this_ad_link + '">' + '<' + '/script>');
+{% if callback %} }; {{callback}}(show{{ pos }}); {% endif %}
 //]]>
 		</script>
 		<noscript>
