@@ -1,4 +1,5 @@
-import collections
+from random import randint
+from urllib import urlencode
 
 from django.template.defaultfilters import slugify
 from django.db.models.query import QuerySet
@@ -25,6 +26,7 @@ class Ad(object):
     """
     Contains all data for a specific ad unit.
     """
+    tile = None
 
     default_site = DEFAULT_SITE
     default_zone = DEFAULT_ZONE
@@ -60,45 +62,34 @@ class Ad(object):
 
     zone = property(get_zone, set_zone)
 
-    def get_link(self):
-        link = '%s/%s;' % (self.site, self.zone)
+    def get_tile(self):
+        return self.tile
 
-        for attr, val in self.attributes.items():
+    def set_tile(self, value):
+        self.tile = value
 
-            # if it is a non-string iteratible object
-            if hasattr(val, '__iter__'):
-                link += self._format_multiple_values(attr, val)
-            else:
-                link += self._format_value(attr, val)
+    def _parse_attributes(self, noscript=False):
+        parsed_attributes = {}
 
-        return link
+        for key, value in self.attributes.iteritems():
 
-    def _format_value(self, attribute_name, val):
+            # We need to recast QuerySets into lists of strings.
+            if isinstance(value, QuerySet):
+                value = [str(x) for x in value]
 
-        if attribute_name != 'sz':
-            val = slugify(val)
+                if noscript is True:
+                    value = ",".join(value)
 
-        return "%s=%s;" % (attribute_name, val)
+            parsed_attributes[key] = value
 
-    def _format_multiple_values(self, attr, values):
-        formatted = u''
-        for val in values:
-            formatted = u'%s%s' % (formatted, self._format_value(attr, val))
-        return formatted
+        return parsed_attributes
 
     def get_dict(self):
         """
         Get the specially formatted dict that will be transformed into an
         ad_slot definition.
         """
-        attributes = {}
-        for key, value in self.attributes.iteritems():
-
-            # We need to cast all iterables into lists of strings.
-            if isinstance(value, QuerySet):
-                value = [str(x) for x in value]
-
-            attributes[key] = value
+        attributes = self._parse_attributes()
 
         return ("ad-{0}".format(self.pos), {
                     'sizes': self.size,
@@ -108,9 +99,17 @@ class Ad(object):
 
     def get_noscript(self):
         """
-        Build the noscript string.
+        Build the noscript url parameters.
         """
-        pass
+        attributes = self._parse_attributes()
+        url_params = {
+                "iu": "/{0}/{1}/{2}".format(self.dfp_id, self.site, self.zone),
+                "sz": "|".join(["{0}x{1}".format(w, h) for w, h in self.size]),
+                "t": "&".join(["{0}={1}".format(k,v) for k, v in attributes.iteritems()]),
+                "tile": self.tile,
+                "c": randint(0, 1000000000),
+                }
+        return urlencode(url_params)
 
     def __unicode__(self):
         """ Prints out the Ad using the ad.html template """
@@ -127,6 +126,7 @@ class AdFactory(object):
     attributes = {}
     default_attributes = DART_AD_DEFAULTS
     ad_slots = {}
+    tile = 0
 
     def __init__(self, **kwargs):
         self.attributes = self.default_attributes.copy()
@@ -136,11 +136,14 @@ class AdFactory(object):
         self.attributes.update(kwargs)
 
     def get(self, *args, **kwargs):
+        self.tile += 1
 
         attr = self.attributes.copy()
         attr.update(kwargs)
 
         ad = Ad(*args, **attr)
+        ad.set_tile(self.tile)
+
         ad_slot_key, ad_slot_def = ad.get_dict()
         self.ad_slots[ad_slot_key] = ad_slot_def
 

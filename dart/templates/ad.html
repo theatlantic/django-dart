@@ -3,6 +3,11 @@
     {% if desc_text %}<span class="presented_by">{{ desc_text }}</span>{% endif %}
 
     <div class="ad-container" id="ad-{{ pos }}">
+        <noscript>
+            <a href="http://pubads.g.doubleclick.net/gampad/jump?{{ noscript }}">
+                <img src="http://pubads.g.doubleclick.net/gampad/ad?{{ noscript }}" />
+            </a>
+        </noscript>
         <script type="text/javascript">
             googletag.cmd.push(function () {
                 googletag.display("ad-{{ pos }}");
