@@ -3,6 +3,7 @@ from urllib import urlencode
 
 from django.template.defaultfilters import slugify
 from django.db.models.query import QuerySet
+from django.db.models import Model
 
 from coffin.template import Context
 from coffin.template.loader import get_template
@@ -47,6 +48,16 @@ class Ad(object):
         self.desc_text = desc_text
         self.template = template
 
+        # There are a couple special cases that are not GPT 'properties'
+        #  - 'callbacks' is a list of JS methods to be called when an ad is
+        #    rendered.
+        #  - 'cookie' tells the GPT processor to check for a cookie before
+        #    creating the slot definition
+        for special_case in ['callbacks', 'cookie']:
+            if special_case in kwargs:
+                setattr(self, special_case, kwargs[special_case])
+                del(kwargs[special_case])
+
         self.attributes = {}
         self.attributes.update(kwargs)
         self.attributes["pos"] = pos
@@ -79,6 +90,8 @@ class Ad(object):
 
                 if noscript is True:
                     value = ",".join(value)
+            elif isinstance(value, Model):
+                value = str(value)
 
             parsed_attributes[key] = value
 
@@ -90,16 +103,25 @@ class Ad(object):
         ad_slot definition.
         """
         attributes = self._parse_attributes()
+        json_dict  = { 'sizes': self.size,
+            'zone': "/{0}/{1}/{2}".format(self.dfp_id, self.site, self.zone),
+            'properties': attributes,
+            }
 
-        return ("ad-{0}".format(self.pos), {
-                    'sizes': self.size,
-                    'zone': "/{0}/{1}/{2}".format(self.dfp_id, self.site, self.zone),
-                    'properties': attributes,
-                    })
+        if hasattr(self, 'cookie'):
+            json_dict['cookie'] = self.cookie
+
+        return ("ad-{0}".format(self.pos), json_dict)
 
     def get_noscript(self):
         """
         Build the noscript url parameters.
+
+         - iu is the zone
+         - sz needs to be in the form of 000x000|111x111|...
+         - t needs to be a url encoded string of url parameters.
+         - tile is an identifier of the adslot on the page.
+         - c is a cache buster.
         """
         attributes = self._parse_attributes()
         url_params = {
@@ -117,7 +139,8 @@ class Ad(object):
         t = get_template(self.template)
         c = Context({
             'pos': self.pos,
-            'noscript': self.get_noscript()
+            'noscript': self.get_noscript(),
+            'callbacks': self.callbacks if hasattr(self, 'callbacks') else None,
         })
         return t.render(c)
 

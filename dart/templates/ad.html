@@ -1,3 +1,10 @@
+{% if callbacks %}
+<script type="text/javascript">
+    {% for callback in callbacks %}
+    Atlantic.Ad.sizeListener("{{ pos }}", {{ callback }});
+    {% endfor %}
+</script>
+{% endif %}
 <div class="ad ad-{{ pos }}">
 
     {% if desc_text %}<span class="presented_by">{{ desc_text }}</span>{% endif %}
