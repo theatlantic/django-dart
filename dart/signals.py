@@ -10,8 +10,16 @@ def process_gpt(sender, **kwargs):
     template = kwargs.get('template')
     context = kwargs.get('context')
 
-    if 'ads' in context and isinstance(context['ads'], AdFactory):
+    # This should be abstracted out but this would require rewriting the Page()
+    # model on cities.
+    ads = None
+    if 'ads' in context:
+        ads = context['ads']
+    elif 'page' in context and hasattr(context['page'], 'ads'):
+        ads = context['page'].ads
+
+    if isinstance(ads, AdFactory):
         template.content = template.content.replace("<!-- GPT REPLACEMENT BLOCK GOES HERE -->",
-            json.dumps(context['ads'].ad_slots), 1)
+            json.dumps(ads.ad_slots), 1)
 
 template_rendered.connect(process_gpt)
