@@ -108,7 +108,7 @@ class Ad(object):
             'properties': attributes,
             }
 
-        if hasattr(self, 'cookie'):
+        if hasattr(self, 'cookie') and settings.DEBUG is False:
             json_dict['cookie'] = self.cookie
 
         return ("ad-{0}".format(self.pos), json_dict)
