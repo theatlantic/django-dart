@@ -1,15 +1,16 @@
-{% if callbacks %}
 <script type="text/javascript">
+    Atlantic.Ad.sizeListener("{{ pos }}", function($unit, size) { if (size && $unit.height() === 0) { $unit.css("height", "auto"); }});
+    {% if callbacks %}
     {% for callback in callbacks %}
     Atlantic.Ad.sizeListener("{{ pos }}", {{ callback }});
     {% endfor %}
+    {% endif %}
 </script>
-{% endif %}
 <div class="ad ad-{{ pos }}">
 
     {% if desc_text %}<span class="presented_by">{{ desc_text }}</span>{% endif %}
 
-    <div class="ad-container" id="ad-{{ pos }}">
+    <div class="ad-container" id="ad-{{ pos }}" style="height:0px;">
         <noscript>
             <a href="http://pubads.g.doubleclick.net/gampad/jump?{{ noscript }}">
                 <img src="http://pubads.g.doubleclick.net/gampad/ad?{{ noscript }}" />
