@@ -1,3 +1,5 @@
+import re
+
 from random import randint
 from urllib import urlencode
 
@@ -86,12 +88,14 @@ class Ad(object):
 
             # We need to recast QuerySets into lists of strings.
             if isinstance(value, QuerySet):
-                value = [str(x) for x in value]
+                value = [slugify(x) for x in value]
 
                 if noscript is True:
                     value = ",".join(value)
-            elif isinstance(value, Model):
-                value = str(value)
+            elif isinstance(value, list):
+                value = [slugify(x) for x in value]
+            else:
+                value = slugify(value)
 
             parsed_attributes[key] = value
 
