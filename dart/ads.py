@@ -1,3 +1,4 @@
+import collections
 import re
 
 from random import randint
@@ -86,16 +87,16 @@ class Ad(object):
 
         for key, value in self.attributes.iteritems():
 
-            # We need to recast QuerySets into lists of strings.
-            if isinstance(value, QuerySet):
-                value = [slugify(x) for x in value]
-
-                if noscript is True:
-                    value = ",".join(value)
-            elif isinstance(value, list):
-                value = [slugify(x) for x in value]
-            else:
+            # Attributes need to be handled in different ways if they're lists.
+            if isinstance(value, basestring):
                 value = slugify(value)
+            elif isinstance(value, collections.Mapping):
+                raise AdException("Mappings are not allowed in properties.")
+            else:
+                try:
+                    value = [slugify(x) for x in value]
+                except TypeError:
+                    pass
 
             parsed_attributes[key] = value
 
