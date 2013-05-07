@@ -1,5 +1,4 @@
 import collections
-import re
 
 from random import randint
 from urllib import urlencode
@@ -96,7 +95,7 @@ class Ad(object):
                 try:
                     value = [slugify(x) for x in value]
                 except TypeError:
-                    pass
+                    value = slugify(value)
 
             parsed_attributes[key] = value
 
