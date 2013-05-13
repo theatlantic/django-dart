@@ -1,4 +1,6 @@
 import collections
+import json
+import re
 
 from random import randint
 from urllib import urlencode
@@ -35,9 +37,16 @@ class Ad(object):
     default_zone = DEFAULT_ZONE
     default_dfp_id = DEFAULT_DFP_ID
 
-    def __init__(self, pos, size=[[0,0]], desc_text='', template='ad.html',**kwargs):
+    def __init__(self, pos, size=[[0,0]], desc_text='', template='dart/ad.html',**kwargs):
         if size is [[0,0]]:
             raise AdException("Size must be defined in all ad units.")
+        elif isinstance(size, basestring):
+            try:
+                size = self._parse_sizes(size)
+            except AdException:
+                # The ad won't work but we don't want to explode the entire
+                # page for one mistake.
+                size = None
 
         # Set site, zone, dfp_id.
         for key in ['site', 'zone', 'dfp_id']:
@@ -71,7 +80,14 @@ class Ad(object):
         return self._zone
 
     def set_zone(self, value):
-        self._zone = slugify(value)
+        """ We need to slugify the zone but preserve slashes. """
+        slugified_values = []
+
+        parts = value.split("/")
+        for part in parts:
+            slugified_values.append(slugify(part))
+
+        self._zone = "/".join(slugified_values)
 
     zone = property(get_zone, set_zone)
 
@@ -87,7 +103,9 @@ class Ad(object):
         for key, value in self.attributes.iteritems():
 
             # Attributes need to be handled in different ways if they're lists.
-            if isinstance(value, basestring):
+            if not value:
+                continue
+            elif isinstance(value, basestring):
                 value = slugify(value)
             elif isinstance(value, collections.Mapping):
                 raise AdException("Mappings are not allowed in properties.")
@@ -100,6 +118,22 @@ class Ad(object):
             parsed_attributes[key] = value
 
         return parsed_attributes
+
+    def _parse_sizes(self, sizes):
+        try:
+            sizes = json.loads(sizes)
+        except ValueError:
+            sizes = sizes.replace(" ", "")
+            matches = re.search(r'^(?:(\d+x\d+),)*(\d+x\d+)$', sizes)
+
+            if not matches:
+                raise AdException("Size string is not in the correct form.")
+            else:
+                sizes = [[int(x) for x in size.split("x")] for size in
+                            matches.groups() if size is not None]
+
+
+        return sizes
 
     def get_dict(self):
         """
@@ -152,26 +186,50 @@ class AdFactory(object):
 
     attributes = {}
     default_attributes = DART_AD_DEFAULTS
-    ad_slots = {}
+    _ad_slots = {}
     tile = 0
 
     def __init__(self, **kwargs):
+        """
+        Initialize the AdFactory with default options that should be set on
+        each ad.
+        """
         self.attributes = self.default_attributes.copy()
         self.set(**kwargs)
 
-    def set(self, **kwargs):
-        self.attributes.update(kwargs)
+    @property
+    def ad_slots(self):
+        return json.dumps(self._ad_slots)
 
-    def get(self, *args, **kwargs):
+    def define(self, pos, **kwargs):
+        """
+        Add a slot definition. This allows us to cache them so we can access
+        them later.
+        """
+        if not pos:
+            return
+
         self.tile += 1
 
         attr = self.attributes.copy()
         attr.update(kwargs)
 
-        ad = Ad(*args, **attr)
+        ad = Ad(pos, **attr)
         ad.set_tile(self.tile)
 
         ad_slot_key, ad_slot_def = ad.get_dict()
-        self.ad_slots[ad_slot_key] = ad_slot_def
+        self._ad_slots[ad_slot_key] = ad_slot_def
 
-        return ad
+    def set(self, **kwargs):
+        self.attributes.update(kwargs)
+
+    def get(self, pos, *args, **kwargs):
+        """
+        Retreive a slot definition if it exists. Otherwise, create it.
+
+        If a slot already exists, it will not be updated.
+        """
+        if pos not in self.ad_slots:
+            self.define(pos, **kwargs)
+
+        return self._ad_slots[pos]

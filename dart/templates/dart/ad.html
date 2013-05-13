@@ -1,3 +1,4 @@
+{% block ad %}
 <script type="text/javascript">
     Atlantic.Ad.sizeListener("{{ pos }}", function($unit, size) { if (size && $unit.height() === 0) { $unit.css("height", "auto"); }});
     {% if callbacks %}
@@ -5,9 +6,9 @@
     Atlantic.Ad.sizeListener("{{ pos }}", {{ callback }});
     {% endfor %}
     {% endif %}
+    {% block before_ad %}{% endblock %}
 </script>
 <div class="ad ad-{{ pos }}">
-
     {% if desc_text %}<span class="presented_by">{{ desc_text }}</span>{% endif %}
 
     <div class="ad-container" id="ad-{{ pos }}" style="height:0px;">
@@ -23,3 +24,4 @@
         </script>
     </div>
 </div>
+{% endblock ad %}
