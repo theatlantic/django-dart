@@ -219,6 +219,7 @@ class AdFactory(object):
 
         ad_slot_key, ad_slot_def = ad.get_dict()
         self._ad_slots[ad_slot_key] = ad_slot_def
+        return ad
 
     def set(self, **kwargs):
         self.attributes.update(kwargs)
