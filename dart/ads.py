@@ -6,8 +6,6 @@ from random import randint
 from urllib import urlencode
 
 from django.template.defaultfilters import slugify
-from django.db.models.query import QuerySet
-from django.db.models import Model
 
 from coffin.template import Context
 from coffin.template.loader import get_template
@@ -17,12 +15,14 @@ from django.conf import settings
 DART_AD_DEFAULTS = getattr(settings, 'DART_AD_DEFAULTS', {})
 
 # This sets DEFAULT_SITE, DEFAULT_ZONE, DEFAULT_DFP_ID
-for DEFAULT_KEY in ['site', 'zone', 'dfp_id']:
-    if hasattr(DART_AD_DEFAULTS, DEFAULT_KEY):
-        globals()['DEFAULT_{0}'.format(DEFAULT_KEY.upper())] = DART_AD_DEFAULTS[DEFAULT_KEY]
-        del(DART_AD_DEFAULTS[DEFAULT_KEY])
-    else:
-        globals()['DEFAULT_{0}'.format(DEFAULT_KEY.upper())] = DEFAULT_KEY
+for default_key in ['site', 'zone', 'dfp_id']:
+    global_name = 'DEFAULT_{0}'.format(default_key.upper())
+    globals()[global_name] = ""
+
+    # If we have it in defaults, escalate it to a global variable
+    if hasattr(DART_AD_DEFAULTS, default_key):
+        globals()[global_name] = DART_AD_DEFAULTS[default_key]
+        del(DART_AD_DEFAULTS[default_key])
 
 class AdException(Exception):
     pass
@@ -76,26 +76,23 @@ class Ad(object):
         self.pos = pos
         self.size = size
 
-    def get_zone(self):
+    @property
+    def zone(self):
         return self._zone
 
-    def set_zone(self, value):
+    @zone.setter
+    def zone(self, value):
         """ We need to slugify the zone but preserve slashes. """
         slugified_values = []
+        if isinstance(value, basestring):
+            parts = value.split("/")
+        else:
+            parts = value
 
-        parts = value.split("/")
         for part in parts:
             slugified_values.append(slugify(part))
 
         self._zone = "/".join(slugified_values)
-
-    zone = property(get_zone, set_zone)
-
-    def get_tile(self):
-        return self.tile
-
-    def set_tile(self, value):
-        self.tile = value
 
     def _parse_attributes(self, noscript=False):
         parsed_attributes = {}
@@ -131,7 +128,6 @@ class Ad(object):
             else:
                 sizes = [[int(x) for x in size.split("x")] for size in
                             matches.groups() if size is not None]
-
 
         return sizes
 
@@ -215,7 +211,7 @@ class AdFactory(object):
         attr.update(kwargs)
 
         ad = Ad(pos, **attr)
-        ad.set_tile(self.tile)
+        ad.tile = self.tile
 
         ad_slot_key, ad_slot_def = ad.get_dict()
         self._ad_slots[ad_slot_key] = ad_slot_def
