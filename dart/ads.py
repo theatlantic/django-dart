@@ -127,7 +127,7 @@ class Ad(object):
                 raise AdException("Size string is not in the correct form.")
             else:
                 sizes = [[int(x) for x in size.split("x")] for size in
-                            matches.groups() if size is not None]
+                            sizes.split(",")]
 
         return sizes
 
