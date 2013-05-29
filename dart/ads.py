@@ -183,8 +183,8 @@ class AdFactory(object):
 
     attributes = {}
     default_attributes = DART_AD_DEFAULTS
-    _ad_slots = {}
-    _ads = {}
+    _ad_slots = None
+    _ads = None
     tile = 0
 
     def __init__(self, **kwargs):
@@ -192,6 +192,9 @@ class AdFactory(object):
         Initialize the AdFactory with default options that should be set on
         each ad.
         """
+        self._ad_slots = {}
+        self._ads = {}
+
         self.attributes = self.default_attributes.copy()
         self.set(**kwargs)
 
