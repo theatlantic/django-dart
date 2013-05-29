@@ -14,16 +14,6 @@ from django.conf import settings
 
 DART_AD_DEFAULTS = getattr(settings, 'DART_AD_DEFAULTS', {})
 
-# This sets DEFAULT_SITE, DEFAULT_ZONE, DEFAULT_DFP_ID
-for default_key in ['site', 'zone', 'dfp_id']:
-    global_name = 'DEFAULT_{0}'.format(default_key.upper())
-    globals()[global_name] = ""
-
-    # If we have it in defaults, escalate it to a global variable
-    if hasattr(DART_AD_DEFAULTS, default_key):
-        globals()[global_name] = DART_AD_DEFAULTS[default_key]
-        del(DART_AD_DEFAULTS[default_key])
-
 class AdException(Exception):
     pass
 
@@ -32,10 +22,6 @@ class Ad(object):
     Contains all data for a specific ad unit.
     """
     tile = None
-
-    default_site = DEFAULT_SITE
-    default_zone = DEFAULT_ZONE
-    default_dfp_id = DEFAULT_DFP_ID
 
     def __init__(self, pos, size=[[0,0]], desc_text='', template='dart/ad.html',**kwargs):
         if size is [[0,0]]:
@@ -51,10 +37,9 @@ class Ad(object):
         # Set site, zone, dfp_id.
         for key in ['site', 'zone', 'dfp_id']:
             try:
-                setattr(self, key, kwargs[key])
-                del(kwargs[key])
+                setattr(self, key, kwargs.pop(key))
             except KeyError:
-                setattr(self, key, getattr(self, 'default_{0}'.format(key)))
+                setattr(self, key, DART_AD_DEFAULTS[key])
 
         self.desc_text = desc_text
         self.template = template
@@ -66,8 +51,7 @@ class Ad(object):
         #    creating the slot definition
         for special_case in ['callbacks', 'cookie']:
             if special_case in kwargs:
-                setattr(self, special_case, kwargs[special_case])
-                del(kwargs[special_case])
+                setattr(self, special_case, kwargs.pop(special_case))
 
         self.attributes = {}
         self.attributes.update(kwargs)
@@ -232,9 +216,9 @@ class AdFactory(object):
 
         If a slot already exists, it will not be updated.
         """
-        if pos not in self.ad_slots:
+        if "ad-{0}".format(pos) not in self._ads:
             ad = self.define(pos, **kwargs)
         else:
-            ad = self._ads["ad-{}".format(pos)]
+            ad = self._ads["ad-{0}".format(pos)]
 
         return ad
