@@ -1,5 +1,3 @@
-import json
-
 from django.dispatch import Signal
 
 from dart.ads import AdFactory
@@ -20,6 +18,6 @@ def process_gpt(sender, **kwargs):
 
     if isinstance(ads, AdFactory):
         template.content = template.content.replace("<!-- GPT REPLACEMENT BLOCK GOES HERE -->",
-            json.dumps(ads.ad_slots), 1)
+            ads.ad_slots, 1)
 
 template_rendered.connect(process_gpt)

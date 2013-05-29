@@ -175,6 +175,7 @@ class Ad(object):
             'pos': self.pos,
             'noscript': self.get_noscript(),
             'callbacks': self.callbacks if hasattr(self, 'callbacks') else None,
+            'desc_text': self.desc_text,
         })
         return t.render(c)
 
@@ -183,6 +184,7 @@ class AdFactory(object):
     attributes = {}
     default_attributes = DART_AD_DEFAULTS
     _ad_slots = {}
+    _ads = {}
     tile = 0
 
     def __init__(self, **kwargs):
@@ -215,6 +217,7 @@ class AdFactory(object):
 
         ad_slot_key, ad_slot_def = ad.get_dict()
         self._ad_slots[ad_slot_key] = ad_slot_def
+        self._ads[ad_slot_key] = ad
         return ad
 
     def set(self, **kwargs):
@@ -227,6 +230,8 @@ class AdFactory(object):
         If a slot already exists, it will not be updated.
         """
         if pos not in self.ad_slots:
-            self.define(pos, **kwargs)
+            ad = self.define(pos, **kwargs)
+        else:
+            ad = self._ads["ad-{}".format(pos)]
 
-        return self._ad_slots[pos]
+        return ad
