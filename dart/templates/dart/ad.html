@@ -1,7 +1,13 @@
 {% block ad %}
 <script type="text/javascript">
     {% block ad_listeners %}
-        Atlantic.Ad.sizeListener("{{ pos }}", function($unit, size) { if (size && $unit.height() === 0) { $unit.css("height", "auto"); }});
+    Atlantic.Ad.sizeListener("{{ pos }}", function($unit, size) {
+        if (size
+            && $unit.height() === 0) { $unit.css("height", "auto"); }
+        else if (!size) {
+            $unit.closest(".ad").css("display", "none");
+        }
+    });
         {% if callbacks %}
             {% for callback in callbacks %}
                 Atlantic.Ad.sizeListener("{{ pos }}", {{ callback }});
