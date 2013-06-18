@@ -1,7 +1,3 @@
-VERSION = '1.0.1'
-
-from django.dispatch import Signal
-
 from coffin.common import env
 from coffin.template import Context, dict_from_django_context, Template as CoffinTemplate
 

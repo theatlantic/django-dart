@@ -14,8 +14,10 @@ from django.conf import settings
 
 DART_AD_DEFAULTS = getattr(settings, 'DART_AD_DEFAULTS', {})
 
+
 class AdException(Exception):
     pass
+
 
 class Ad(object):
     """
@@ -23,12 +25,12 @@ class Ad(object):
     """
     tile = None
 
-    def __init__(self, pos, size=[[0,0]], desc_text='', template='dart/ad.html',**kwargs):
-        if size is [[0,0]]:
+    def __init__(self, pos, size=[[0, 0]], desc_text='', template='dart/ad.html', **kwargs):
+        if size is [[0, 0]]:
             raise AdException("Size must be defined in all ad units.")
         elif isinstance(size, basestring):
             try:
-                size = self._parse_sizes(size)
+                size = Ad._parse_sizes(size)
             except AdException:
                 # The ad won't work but we don't want to explode the entire
                 # page for one mistake.
@@ -100,7 +102,8 @@ class Ad(object):
 
         return parsed_attributes
 
-    def _parse_sizes(self, sizes):
+    @staticmethod
+    def _parse_sizes(sizes):
         try:
             sizes = json.loads(sizes)
         except ValueError:
@@ -111,9 +114,16 @@ class Ad(object):
                 raise AdException("Size string is not in the correct form.")
             else:
                 sizes = [[int(x) for x in size.split("x")] for size in
-                            sizes.split(",")]
-
+                         sizes.split(",")]
         return sizes
+
+    @staticmethod
+    def is_valid_size(sizes):
+        try:
+            sz = Ad._parse_sizes(sizes)
+        except AdException:
+            return False
+        return bool(sz)
 
     def get_dict(self):
         """
@@ -121,10 +131,9 @@ class Ad(object):
         ad_slot definition.
         """
         attributes = self._parse_attributes()
-        json_dict  = { 'sizes': self.size,
+        json_dict = {'sizes': self.size,
             'zone': "/{0}/{1}/{2}".format(self.dfp_id, self.site, self.zone),
-            'properties': attributes,
-            }
+            'properties': attributes, }
 
         if hasattr(self, 'cookie') and settings.DEBUG is False:
             json_dict['cookie'] = self.cookie
@@ -145,7 +154,7 @@ class Ad(object):
         url_params = {
                 "iu": "/{0}/{1}/{2}".format(self.dfp_id, self.site, self.zone),
                 "sz": "|".join(["{0}x{1}".format(w, h) for w, h in self.size]),
-                "t": "&".join(["{0}={1}".format(k,v) for k, v in attributes.iteritems()]),
+                "t": "&".join(["{0}={1}".format(k, v) for k, v in attributes.iteritems()]),
                 "tile": self.tile,
                 "c": randint(0, 1000000000),
                 }
@@ -162,6 +171,7 @@ class Ad(object):
             'desc_text': self.desc_text,
         })
         return t.render(c)
+
 
 class AdFactory(object):
 

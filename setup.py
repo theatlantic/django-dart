@@ -7,7 +7,7 @@ f.close()
 
 setup(
     name='django-dart',
-    version="1.0",
+    version='1.3.4',
     description='django-dart is a reusable Django application for DoubleClick ad tags',
     long_description=readme,
     author='Josh West',
@@ -21,7 +21,6 @@ setup(
         'Programming Language :: Python',
         'Framework :: Django',
     ],
-	include_package_data=True,
-	zip_safe=False,
+    include_package_data=True,
+    zip_safe=False,
 )
-
