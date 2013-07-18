@@ -205,6 +205,9 @@ class AdFactory(object):
 
     def get_page_properties(self):
         """ Gets the page-level paramters as JSON. """
+        page_vars = self.page_vars
+        for key, val in page_vars.items():
+            self.page_vars[key] = slugify(val)
         return json.dumps(self.page_vars)
 
     @property
