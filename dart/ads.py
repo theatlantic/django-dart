@@ -177,6 +177,7 @@ class AdFactory(object):
 
     attributes = {}
     default_attributes = DART_AD_DEFAULTS
+    page_vars = {}
     _ad_slots = None
     _ads = None
     tile = 0
@@ -185,12 +186,26 @@ class AdFactory(object):
         """
         Initialize the AdFactory with default options that should be set on
         each ad.
+
+        Use the kwarg `page_vars` to set page-wide properties. All other
+        kwargs will be passed to each ad.
+
+        Ideally, everything set on factory would be global. This is a quick fix
+        to enable it without breaking the API.
+
         """
         self._ad_slots = {}
         self._ads = {}
 
+        if 'page_vars' in kwargs:
+            self.page_vars = kwargs.pop('page_vars')
+
         self.attributes = self.default_attributes.copy()
         self.set(**kwargs)
+
+    def get_page_properties(self):
+        """ Gets the page-level paramters as JSON. """
+        return json.dumps(self.page_vars)
 
     @property
     def ad_slots(self):
