@@ -209,8 +209,10 @@ class AdFactory(object):
         for key, val in page_vars.items():
             if isinstance(val, basestring):
                 val = slugify(val)
-            else:
+            elif hasattr(val, '__iter__'):
                 val = [slugify(item) for item in val]
+            else:
+                val = slugify(val)
             self.page_vars[key] = val
         return json.dumps(self.page_vars)
 
